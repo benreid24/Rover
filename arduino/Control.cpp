@@ -8,7 +8,7 @@ namespace Control {
 namespace {
 
 /// Returns h1-h2 but accounts for 360 wrap
-double getHeadingDifference(double h1, double h2) {
+int getHeadingDifference(int h1, int h2) {
   return min(abs(h1-h2), abs(abs(h1-h2)-360));
 }
 
@@ -32,7 +32,7 @@ int normalizeHeading(int h) {
 
 int getTurnSpeed(int h1, int h2) {
   int diff = getHeadingDifference(h1, h2);
-  int spd = map(diff, 0, 60, 14, 50);
+  int spd = map(diff, 0, 60, 12, 50);
   return (spd>50)?(50):(spd);
 }
 
@@ -42,7 +42,7 @@ void setHeading(int heading) {
   heading = normalizeHeading(heading);
   int currentHeading = IMU::getRelativeHeading();
   Motors::Turn dir = getShorterDir(currentHeading, heading);
-  while (getHeadingDifference(heading, currentHeading) >= 1) {
+  while (getHeadingDifference(heading, currentHeading) > 3) {
     Motors::turn(dir, getTurnSpeed(heading, currentHeading));
     currentHeading = IMU::getRelativeHeading();
     int d = getHeadingDifference(heading, currentHeading);

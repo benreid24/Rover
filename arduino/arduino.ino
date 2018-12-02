@@ -13,11 +13,8 @@ void setup() {
   if (!IMU::init()) {
     Error::quit("Failed to initialize IMU", Error::Fatal);
   }
-  Control::setHeading(180);
-  delay(2000);
-  Control::setHeading(0);
 }
 
 void loop() {
-  delay(50);
+  Serial.print(Range::infrared(5)); Serial.print(" | "); Serial.println(Range::sonar());
 }
