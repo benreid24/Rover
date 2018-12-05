@@ -46,7 +46,6 @@ void setHeading(int heading) {
     Motors::turn(dir, getTurnSpeed(heading, currentHeading));
     currentHeading = IMU::getRelativeHeading();
     int d = getHeadingDifference(heading, currentHeading);
-    Serial.print(currentHeading); Serial.print(" -> "); Serial.print(heading); Serial.print(" = "); Serial.print(d); Serial.print(" | "); Serial.println(getTurnSpeed(heading, currentHeading));
     delay(5);
   }
   Motors::brake();

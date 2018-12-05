@@ -6,10 +6,13 @@
 namespace Error {
 
 enum Type {
-  Fatal
+  Fatal,
+  Nonfatal
 };
 
 void quit(String error, Type type);
+
+void message(String error, Type type);
   
 }
 

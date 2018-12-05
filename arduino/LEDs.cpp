@@ -9,6 +9,8 @@ const int powerLed = A3;
 const int activeLed = A2;
 const int errorLed = A4;
 
+bool errored = false;
+
 }
 
 void init() {
@@ -34,7 +36,22 @@ void powerOnSequence() {
   }
   digitalWrite(activeLed, HIGH);
   delay(500);
-  digitalWrite(errorLed, LOW);
+  if (!errored)
+    digitalWrite(errorLed, LOW);
+}
+
+void fatalErrorState() {
+  while (1) {
+    digitalWrite(errorLed, HIGH);
+    delay(120);
+    digitalWrite(errorLed, LOW);
+    delay(120);
+  }
+}
+
+void errorState() {
+  digitalWrite(errorLed, HIGH);
+  errored = true;
 }
 
 }

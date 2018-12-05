@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <Adafruit_VCNL4010.h>
+#include <Adafruit_VL53L0X.h>
 #include "Range.h"
 
 namespace Range {
@@ -7,6 +8,15 @@ namespace Range {
 namespace {
 
 /**
+
+
+18 -> 0
+16 -> 0
+14 -> 1    1.0714
+12 -> 1.5  1.125
+6 -> 1.6   1.266
+3 -> 1     1.333
+1 -> 1.5   1.5
 
 Volts -> in
 2.08 -> 62
@@ -20,7 +30,9 @@ Volts -> 1/in
 
  */
  
-const double inchesPerAnalogInput = (5.0/1024.0)/(5.0/512.0);
+const double inPerMm = 1.0/24.1;
+const double shortIrCorrectionThresh = 13.8;
+const double shortIrCorrection = -1.3;
 
 const double y1 = 2.08, y2 = 2.58;
 const double x1 = 0.016129, x2 = 0.025;
@@ -33,19 +45,26 @@ const int impactThresh = 2600;
 const int fourInchThresh = 2500;
 const int sixInchThresh = 2440;
 
-Adafruit_VCNL4010 ir;
+Adafruit_VCNL4010 prox;
+Adafruit_VL53L0X ir;
 
 }
 
-void init() {
-  ir.begin();
+bool init() {
+  return ir.begin() && prox.begin();
 }
 
-double sonar() {
-  return double(analogRead(A0))*inchesPerAnalogInput;
+double shortRangeIr() {
+  VL53L0X_RangingMeasurementData_t measure;
+  ir.rangingTest(&measure, false);
+  if (measure.RangeStatus!=4 && measure.RangeMilliMeter<=512) {
+    double r = double(measure.RangeMilliMeter)*inPerMm;
+    return (r<=shortIrCorrectionThresh)?(r+shortIrCorrection):(r);
+  }
+  return -1;
 }
 
-double infrared(int samples) {
+double longRangeIr(int samples) {
   double measurements[samples];
   double average = 0;
   double mn = 100000, mx = 0;
@@ -66,15 +85,20 @@ double infrared(int samples) {
   return (average-mn-mx)/(samples-2);
 }
 
+double actualRange() {
+  double r = shortRangeIr();
+  return (r>0)?(r):(longRangeIr(6));
+}
+
 ProxCheck proximityCheck() {
-  int prox = ir.readProximity();
-  if (prox >= blockedThresh)
+  int val = prox.readProximity();
+  if (val >= blockedThresh)
     return Blocked;
-  if (prox >= impactThresh)
+  if (val >= impactThresh)
     return ImpactIminent;
-  if (prox >= fourInchThresh)
+  if (val >= fourInchThresh)
     return UnderFourInches;
-  if (prox >= sixInchThresh)
+  if (val >= sixInchThresh)
     return UnderSixInches;
   return Clear;
 }

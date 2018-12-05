@@ -9,6 +9,8 @@ void powerOnSequence();
 
 void errorState();
 
+void fatalErrorState();
+
 }
 
 #endif

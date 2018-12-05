@@ -9,9 +9,11 @@
 void setup() {
   Serial.begin(9600);
   LEDs::init();
-  Range::init();
   Servos::init();
   Motors::init();
+  if (!Range::init()) {
+    Error::message("Failed to initialize full range capabilities", Error::Nonfatal);
+  }
   if (!IMU::init()) {
     Error::quit("Failed to initialize IMU", Error::Fatal);
   }
@@ -20,8 +22,6 @@ void setup() {
 }
 
 void loop() {
-  Control::setHeading(180);
-  delay(2000);
-  Control::setHeading(0);
-  delay(2000);
+  Serial.println(Range::actualRange());
+  delay(300);
 }
