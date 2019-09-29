@@ -19,9 +19,38 @@ void setup() {
   }
 
   LEDs::powerOnSequence();
+
+  const float fdist = Range::actualRange();
+  Servos::setSonarArmPan(100);
+  delay(1000);
+  const float rdist = Range::actualRange();
+  Servos::setSonarArmPan(-100);
+  delay(1500);
+  const float ldist = Range::actualRange();
+
+  Servos::setSonarArmPan(0);
+  if (ldist > fdist || rdist > fdist) {
+    if (ldist > rdist)
+      Control::setHeading(90);
+    else
+      Control::setHeading(-90);
+  }
 }
 
 void loop() {
-  Serial.println(Range::actualRange());
-  delay(300);
+  Control::moveForward();
+  Control::moveBackward(4);
+  
+  Servos::setSonarArmPan(100);
+  delay(1000);
+  const float rdist = Range::actualRange();
+  Servos::setSonarArmPan(-100);
+  delay(1500);
+  const float ldist = Range::actualRange();
+  
+  Servos::setSonarArmPan(0);
+  if (ldist > rdist)
+    Control::setHeading(90);
+  else
+    Control::setHeading(-90);
 }

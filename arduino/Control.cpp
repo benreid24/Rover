@@ -1,6 +1,7 @@
 #include "Control.h"
 #include "IMU.h"
 #include "Motors.h"
+#include "Range.h"
 #include <Arduino.h>
 
 namespace Control {
@@ -45,8 +46,34 @@ void setHeading(int heading) {
   while (getHeadingDifference(heading, currentHeading) > 3) {
     Motors::turn(dir, getTurnSpeed(heading, currentHeading));
     currentHeading = IMU::getRelativeHeading();
-    int d = getHeadingDifference(heading, currentHeading);
     delay(5);
+  }
+  Motors::brake();
+}
+
+
+void moveForward(float inches, int spd) {
+  const float startDist = Range::actualRange();
+  float curDist = Range::actualRange();
+
+  while (startDist - curDist >= inches || inches < 0) {
+    Motors::moveStraight(Motors::Forward, spd);
+    if (Range::proximityCheck() >= Range::UnderSixInches)
+      break;
+    curDist = Range::actualRange();
+    delay(10);
+  }
+  Motors::brake();
+}
+
+void moveBackward(float inches, int spd) {
+  const float startDist = Range::actualRange();
+  float curDist = Range::actualRange();
+
+  while (curDist - startDist <= inches) {
+    Motors::moveStraight(Motors::Backward, spd);
+    curDist = Range::actualRange();
+    delay(10);
   }
   Motors::brake();
 }

@@ -44,7 +44,8 @@ void init() {
 }
 
 void brake(){
-  digitalWrite(standByPin, LOW); 
+  moveStraight(Forward, 0);
+  digitalWrite(standByPin, LOW);
 }
 
 void releaseBrake(){
